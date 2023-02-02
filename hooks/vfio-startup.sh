@@ -15,7 +15,7 @@
 ## Void for testing and helping out in general     ## ##                   ##
 ## .Chris. for testing and helping out in general  ## ## Run this command  ##
 ## WORMS for helping out with testing              ## ## if you dont have  ##
-##################################################### ## names in you're   ##
+##################################################### ## names in your     ##
 ## The VFIO community for using the scripts and    ## ## lspci feedback    ##
 ## testing them for us!                            ## ## in your terminal  ##
 ##################################################### #######################
@@ -23,21 +23,21 @@
 ################################# Variables #################################
 
 ## Adds current time to var for use in echo for a cleaner log and script ##
-DATE=$(date +"%m/%d/%Y %R:%S :")
+DATETIME=$(date +"%m/%d/%Y %R:%S :")
 
 ## Sets dispmgr var as null ##
 DISPMGR="null"
 
 ################################## Script ###################################
 
-echo "$DATE Beginning of Startup!"
+echo "$DATETIME Beginning of Startup!"
 
 
 function stop_display_manager_if_running {
     ## Get display manager on systemd based distros ##
-    if [[ -x /run/systemd/system ]] && echo "$DATE Distro is using Systemd"; then
+    if [[ -x /run/systemd/system ]] && echo "$DATETIME Distro is using Systemd"; then
         DISPMGR="$(grep 'ExecStart=' /etc/systemd/system/display-manager.service | awk -F'/' '{print $(NF-0)}')"
-        echo "$DATE Display Manager = $DISPMGR"
+        echo "$DATETIME Display Manager = $DISPMGR"
 
         ## Stop display manager using systemd ##
         if systemctl is-active --quiet "$DISPMGR.service"; then
@@ -58,7 +58,7 @@ function stop_display_manager_if_running {
 
 function kde-clause {
 
-    echo "$DATE Display Manager = display-manager"
+    echo "$DATETIME Display Manager = display-manager"
 
     ## Stop display manager using systemd ##
     if systemctl is-active --quiet "display-manager.service"; then
@@ -81,10 +81,10 @@ function kde-clause {
 ####################################################################################################################
 
 if pgrep -l "plasma" | grep "plasmashell"; then
-    echo "$DATE Display Manager is KDE, running KDE clause!"
+    echo "$DATETIME Display Manager is KDE, running KDE clause!"
     kde-clause
     else
-        echo "$DATE Display Manager is not KDE!"
+        echo "$DATETIME Display Manager is not KDE!"
         stop_display_manager_if_running
 fi
 
@@ -109,7 +109,7 @@ do
   if test -x /sys/class/vtconsole/vtcon"${i}"; then
       if [ "$(grep -c "frame buffer" /sys/class/vtconsole/vtcon"${i}"/name)" = 1 ]; then
 	       echo 0 > /sys/class/vtconsole/vtcon"${i}"/bind
-           echo "$DATE Unbinding Console ${i}"
+           echo "$DATETIME Unbinding Console ${i}"
            echo "$i" >> /tmp/vfio-bound-consoles
       fi
   fi
@@ -118,7 +118,7 @@ done
 sleep "1"
 
 if lspci -nn | grep -e VGA | grep -s NVIDIA ; then
-    echo "$DATE System has an NVIDIA GPU"
+    echo "$DATETIME System has an NVIDIA GPU"
     grep -qsF "true" "/tmp/vfio-is-nvidia" || echo "true" >/tmp/vfio-is-nvidia
     echo efi-framebuffer.0 > /sys/bus/platform/drivers/efi-framebuffer/unbind
 
@@ -131,11 +131,11 @@ if lspci -nn | grep -e VGA | grep -s NVIDIA ; then
     modprobe -r drm_kms_helper
     modprobe -r drm
 
-    echo "$DATE NVIDIA GPU Drivers Unloaded"
+    echo "$DATETIME NVIDIA GPU Drivers Unloaded"
 fi
 
 if lspci -nn | grep -e VGA | grep -s AMD ; then
-    echo "$DATE System has an AMD GPU"
+    echo "$DATETIME System has an AMD GPU"
     grep -qsF "true" "/tmp/vfio-is-amd" || echo "true" >/tmp/vfio-is-amd
     echo efi-framebuffer.0 > /sys/bus/platform/drivers/efi-framebuffer/unbind
 
@@ -145,7 +145,7 @@ if lspci -nn | grep -e VGA | grep -s AMD ; then
     modprobe -r radeon
     modprobe -r drm
 
-    echo "$DATE AMD GPU Drivers Unloaded"
+    echo "$DATETIME AMD GPU Drivers Unloaded"
 fi
 
 ## Load VFIO-PCI driver ##
@@ -153,4 +153,4 @@ modprobe vfio
 modprobe vfio_pci
 modprobe vfio_iommu_type1
 
-echo "$DATE End of Startup!"
+echo "$DATETIME End of Startup!"
